@@ -32,9 +32,19 @@ const playerFactory = (name,strength,charisma,intelligence,luck) => {
     let maxHealth = 100;
     let currentHealth = 80;
 
+    let inventory = [
+        {
+            name: "Id Card",
+            description: "My ID Card",
+            effect: () => {
+                console.log(this);
+            },
+        },
+    ];
+
     let currentPosition = [12,3]; //y,x
 
-    return {name, charisma, strength, intelligence, luck, cash, karma, energy, maxHealth, currentHealth, currentPosition}
+    return {name, charisma, strength, intelligence, luck, cash, karma, energy, maxHealth, currentHealth, inventory, currentPosition}
 
 }
 
@@ -157,8 +167,28 @@ renderStartMenu = () => {
 
 let home = {
     name: "My Home",
-    shop: false,
-    shopInventory: [],
+    shop: true,
+    shopInventory: [
+        {
+            name: "Smokes",
+            value: 10,
+            description: "<p>SMOKING KILLS - But it makes you cool.<p> <p>-10 HP +1 Charisma</p>",
+            effect: () => {
+                you.currentHealth = you.currentHealth-20;
+                you.charisma = you.charisma++;
+                console.log(you.charisma, you.currentHealth);
+            },
+        },
+        {
+            name: "BubbleGum",
+            value: 5,
+            description: "<p>Bubbly Goodness in a small easy to open package.<p> <p>+5 HP</p>",
+            effect: () => {
+                you.currentHealth = you.currentHealth + 5;
+                console.log(you.currentHealth);
+            },
+        }
+    ],
     options: [
         {
             name: "Sleep",
@@ -181,6 +211,24 @@ let home = {
 
 renderInterFace = (interfaceObject) => {
 
+    let shopHTML = '';
+
+    if(interfaceObject.shop){
+        interfaceObject.shopInventory.map((product)=>{
+            shopHTML += `
+            <p class="product-name">${product.name}</p>
+            <div class="product-desc">${product.description}</div>
+            <p class="product-value">${product.value}</div>
+            <button class="purchase-${product.name}">Buy</button>
+            `
+        });
+    }
+    //if shop 
+
+    //Print Inventory
+    //Add option to hold-up
+    //Add option to work
+
     createOptions = () => {
         let optionsHTML = '';
 
@@ -194,6 +242,7 @@ renderInterFace = (interfaceObject) => {
     let interFaceHTML = `
         <div>
             <h2>${interfaceObject.name}</h2>
+            ${shopHTML}
             ${createOptions()}
             <button class="back-to-map">Back to Map</button>
         </div>
@@ -204,6 +253,14 @@ renderInterFace = (interfaceObject) => {
     interfaceObject.options.map((option)=>{
         document.querySelector('.' + option.name).addEventListener('click', option.effect);
     });
+
+    interfaceObject.shopInventory.map((product) => {
+        document.querySelector(`.purchase-${product.name}`).addEventListener('click', ()=>{
+            you.cash = you.cash - product.value;
+            you.inventory.push(product);
+            console.log(you.cash, you.inventory);
+        });
+    })
 
     document.querySelector('.back-to-map').addEventListener('click', () => {
         printMap(maps.sweetWaterEntrance);
